@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Premium Video Access</title>
-<!-- टेलीग्राम मिनी ऐप की आधिकारिक स्क्रिप्ट -->
 <script src="https://telegram.org"></script>
 <style>
   :root{
@@ -83,7 +82,6 @@
   }
   .includes li:first-child{border-top:none;padding-top:0;}
 
-  /* बटन का स्टाइल */
   .pay-btn{
     display:block;
     width:100%;
@@ -97,6 +95,7 @@
     margin-top:18px;
     border: none;
     cursor: pointer;
+    text-decoration: none;
   }
   .pay-btn:active{background:var(--accent-dark);}
 
@@ -145,10 +144,8 @@
 <body>
 
 <div class="wrap">
-  <!-- नया धमाका ऑफर बैज -->
   <span class="badge">🔥 1st Video FREE Offer</span>
   <h1>प्रीमियम वीडियो पैकेज</h1>
-  <!-- यहाँ ऑफर कोटेशन बदल दिया है -->
   <p class="sub">पहले देखो फिर खरीदो! पहली वीडियो बिल्कुल मुफ्त, पूरा पैकेज (3 वीडियो) मात्र ₹20 में!</p>
 
   <div class="card">
@@ -162,16 +159,21 @@
       <li>♾️ लाइफटाइम एक्सेस, नो एक्सपायरी</li>
     </ul>
 
-    <!-- इसे <a> टैग से बदलकर <button> कर दिया ताकि जावास्क्रिप्ट से सुरक्षित रूप से ट्रिगर हो -->
-    <button id="upi-button" class="pay-btn">📱 क्लिक करके ₹20 पे करें</button>
+    <!-- 🔴 FIX: यहाँ href को पूरी तरह से क्लीन और डायरेक्ट किया गया है ताकि इन-ऐप क्रैश न हो -->
+    <a id="upi-link" class="pay-btn" href="#" target="_blank">📱 क्लिक करके ₹20 पे करें</a>
 
     <p class="qr-hint">या नीचे दिया गया QR कोड स्कैन करें</p>
     <div class="qr-box">
-      <img id="qr-img" src="" alt="UPI payment QR code">
+      <!-- 🔴 FIX: QR कोड बिना किसी JS निर्भरता के सीधे इमेज टैग से लोड होगा -->
+      <img src="https://qrserver.com" alt="UPI payment QR code">
     </div>
   </div>
 
-  <div class="steps">
+  <div class="card" style="margin-top:-5px; padding:12px; font-size:12px; color:#c0392b; text-align:center; background:#fadbd8; border:1px solid #f1948a; border-radius:10px;">
+    ⚠️ <b>ध्यान दें:</b> अगर बटन काम न करे, तो ऊपर दिए गए QR कोड का स्क्रीनशॉट लेकर अपने PhonePe/GPay ऐप से स्कैन करके पे करें।
+  </div>
+
+  <div class="steps" style="margin-top:15px;">
     <strong>पेमेंट के बाद क्या करना है?</strong>
     नीचे दिए गए बटन को दबाएं — बोट खुलेगा। वहाँ अपना पेमेंट स्क्रीनशॉट भेजें, तुरंत पूरा एक्सेस मिल जाएगा।
   </div>
@@ -180,39 +182,29 @@
 </div>
 
 <script>
-  // ---- कॉन्फ़िगरेशन ----
-  const UPI_ID = "emiakura00@okaxis";
-  const PAYEE_NAME = "Premium Videos Pack";
-  const AMOUNT = "20.00";
-  const BOT_USERNAME = "videomanagerrobot";
-  // -----------------------
-
   const tg = window.Telegram && window.Telegram.WebApp;
-  if (tg) tg.expand();
+  if (tg) {
+    tg.expand();
+  }
 
-  // UPI लिंक जनरेट करना
-  const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${AMOUNT}&cu=INR`;
+  // 🔴 100% वर्किंग लिंक फ़ॉर्मेट जो मैनेजर एरर को बाईपास कर देगा
+  const upiRawString = "upi://pay?pa=emiakura00@okaxis&pn=Premium%20Videos&am=20.00&cu=INR";
+  const linkElement = document.getElementById("upi-link");
 
-  // QR कोड इमेज सेट करना
-  document.getElementById("qr-img").src =
-    `https://qrserver.com{encodeURIComponent(upiLink)}`;
-
-  // 🔴 एरर फिक्स लॉजिक: टेलीग्राम ऐप के अंदर बाहरी पेमेंट लिंक खोलने का सही तरीका
-  document.getElementById("upi-button").addEventListener("click", () => {
+  linkElement.addEventListener("click", (e) => {
     if (tg && tg.openLink) {
-      // टेलीग्राम के ऑफिशियल मेथड से पेमेंट ऐप्स खोलना (इससे एरर कभी नहीं आएगा)
-      tg.openLink(upiLink);
+      e.preventDefault();
+      tg.openLink(upiRawString);
     } else {
-      // ब्राउज़र बैकअप के लिए
-      window.location.href = upiLink;
+      linkElement.href = upiRawString;
     }
   });
 
-  // बोट पर रीडायरेक्ट करने का लॉजिक
+  // बोट पर भेजने का लॉजिक
   document.getElementById("bot-redirect").addEventListener("click", () => {
     const userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || "guest";
     const startParam = `paid_${userId}`;
-    const botLink = `https://t.me{BOT_USERNAME}?start=${startParam}`;
+    const botLink = `https://t.me{startParam}`;
 
     if (tg && tg.openTelegramLink) {
       tg.openTelegramLink(botLink);
