@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Premium Video Access</title>
-<!-- 🔴 FIX: टेलीग्राम मिनी ऐप की सही और ऑफिशियल स्क्रिप्ट लिंक -->
+<!-- टेलीग्राम मिनी ऐप की सही स्क्रिप्ट लिंक -->
 <script src="https://telegram.org"></script>
 <style>
   :root{
@@ -160,21 +160,17 @@
       <li>♾️ लाइफटाइम एक्सेस, नो एक्सपायरी</li>
     </ul>
 
-    <!-- आपका वर्किंग पेमेंट बटन लिंक -->
+    <!-- पेमेंट बटन -->
     <a id="upi-link" class="pay-btn" href="#" target="_blank">📱 क्लिक करके ₹20 पे करें</a>
 
     <p class="qr-hint">या नीचे दिया गया QR कोड स्कैन करें</p>
     <div class="qr-box">
-      <!-- 🔴 FIX: QR कोड का पूरा API लिंक यहाँ फिक्स कर दिया है, अब यह 100% लोड होगा -->
-      <img src="https://qrserver.com" alt="UPI payment QR code">
+      <!-- जावास्क्रिप्ट से डायनेमिकली लोड होने वाली QR कोड इमेज -->
+      <img id="qr-img" src="" alt="UPI payment QR code">
     </div>
   </div>
 
-  <div class="card" style="margin-top:-5px; padding:12px; font-size:12px; color:#c0392b; text-align:center; background:#fadbd8; border:1px solid #f1948a; border-radius:10px;">
-    ⚠️ <b>ध्यान दें:</b> अगर बटन काम न करे, तो ऊपर दिए गए QR कोड का स्क्रीनशॉट लेकर अपने PhonePe/GPay ऐप से स्कैन करके पे करें।
-  </div>
-
-  <div class="steps" style="margin-top:15px;">
+  <div class="steps">
     <strong>पेमेंट के बाद क्या करना है?</strong>
     नीचे दिए गए बटन को दबाएं — बोट खुलेगा। वहाँ अपना पेमेंट स्क्रीनशॉट भेजें, तुरंत पूरा एक्सेस मिल जाएगा।
   </div>
@@ -183,30 +179,28 @@
 </div>
 
 <script>
+  // ---- Config: एडिट करने के लिए आपका सेटअप ----
+  const UPI_ID = "emiakura00@okaxis";
+  const PAYEE_NAME = "Premium Videos Pack";
+  const AMOUNT = "20.00";
+  const BOT_USERNAME = "videomanagerrobot"; 
+  // ---------------------------------------------------------
+
+  const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${AMOUNT}&cu=INR`;
+  document.getElementById("upi-link").href = upiLink;
+
+  // 🔴 आपका स्पेसिफिक वर्किंग QR और रीडायरेक्ट लॉजिक यहाँ सेट है:
+  document.getElementById("qr-img").src =
+    `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiLink)}`;
+ 
   const tg = window.Telegram && window.Telegram.WebApp;
-  if (tg) {
-    tg.expand();
-  }
-
-  // आपका 100% वर्किंग पेमेंट लॉजिक
-  const upiRawString = "upi://pay?pa=emiakura00@okaxis&pn=Premium%20Videos&am=20.00&cu=INR";
-  const linkElement = document.getElementById("upi-link");
-
-  linkElement.addEventListener("click", (e) => {
-    if (tg && tg.openLink) {
-      e.preventDefault();
-      tg.openLink(upiRawString);
-    } else {
-      linkElement.href = upiRawString;
-    }
-  });
-
-  // 🔴 FIX: बोट पर भेजने का लॉजिक (यूजरनेम और स्लैश की गलती सुधार दी है)
+  if (tg) tg.expand();
+ 
   document.getElementById("bot-redirect").addEventListener("click", () => {
     const userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || "guest";
     const startParam = `paid_${userId}`;
-    const botLink = `https://t.me{startParam}`;
-
+    const botLink = `https://t.me/${BOT_USERNAME}?start=${startParam}`;
+ 
     if (tg && tg.openTelegramLink) {
       tg.openTelegramLink(botLink);
     } else {
